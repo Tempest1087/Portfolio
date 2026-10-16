@@ -13,9 +13,6 @@ Files
 
 Keep the three files in the same folder.
 
-Run it
-- Double-click `index.html`, or
-- In VS Code, install **Live Server**, right-click `index.html` and choose "Open with Live Server".
 
 The fonts come from Google Fonts, so you need an internet connection to see them.
 Without it the page still works and falls back to system fonts.
