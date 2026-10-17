@@ -60,17 +60,22 @@ const ST = {
 const ORDER = ['home', 'about', 'lib', 'potion', 'arcade', 'contact'];
 
 /* ===== Audio ===== */
-let ac, master, lp, musicOn = true, timer, step = 0, nb;
+const SOUND_VOLUME = 0.55;
+const MUSIC_VOLUME = 1.5;
+let ac, master, musicGain, lp, musicOn = true, timer, step = 0, nb;
 
 function initAudio() {
     ac = new (window.AudioContext || window.webkitAudioContext)();
     master = ac.createGain();
-    master.gain.value = 0.55;
+    master.gain.value = SOUND_VOLUME;
     master.connect(ac.destination);
+    musicGain = ac.createGain();
+    musicGain.gain.value = MUSIC_VOLUME;
+    musicGain.connect(master);
     lp = ac.createBiquadFilter();
     lp.type = 'lowpass';
     lp.frequency.value = 2200;
-    lp.connect(master);
+    lp.connect(musicGain);
     nb = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
     const d = nb.getChannelData(0);
     for (let i = 0; i < d.length; i++) {
@@ -92,7 +97,7 @@ function tone(f, t, d, type, v, a, dest) {
     o.stop(t + d + 0.05);
 }
 
-function sw(f1, f2, t, d, type, v) {
+function sw(f1, f2, t, d, type, v, dest) {
     const o = ac.createOscillator(), g = ac.createGain();
     o.type = type;
     o.frequency.setValueAtTime(f1, t);
@@ -100,7 +105,7 @@ function sw(f1, f2, t, d, type, v) {
     g.gain.setValueAtTime(v, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     o.connect(g);
-    g.connect(master);
+    g.connect(dest || master);
     o.start(t);
     o.stop(t + d + 0.05);
 }
@@ -176,7 +181,7 @@ function tick() {
     tone(f * 1.004, t, 1.6, 'triangle', 0.035, 0.01, lp);
     if (i % 4 === 0) {
         tone(c[0] / 2, t, 1.2, 'triangle', 0.11, 0.01, lp);
-        sw(120, 40, t, 0.18, 'sine', 0.13);
+        sw(120, 40, t, 0.18, 'sine', 0.13, musicGain);
     }
     if (R() < 0.25) {
         tone(PEN[R() * 6 | 0], t, 0.9, 'triangle', 0.05, 0.005, lp);
@@ -206,7 +211,7 @@ $('#mute').onclick = e => {
     e.target.textContent = 'Sound: ' + (musicOn ? 'on' : 'off');
     e.target.setAttribute('aria-pressed', !musicOn);
     if (ac) {
-        master.gain.value = musicOn ? 0.55 : 0;
+        master.gain.value = musicOn ? SOUND_VOLUME : 0;
     }
     if (musicOn) {
         sfx('click');
@@ -1964,7 +1969,7 @@ $('#trn').addEventListener('click', () => {
 
 document.addEventListener('visibilitychange', () => {
     if (ac && musicOn) {
-        master.gain.value = document.hidden ? 0 : 0.55;
+        master.gain.value = document.hidden ? 0 : SOUND_VOLUME;
     }
 });
 
