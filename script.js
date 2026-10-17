@@ -59,7 +59,7 @@ const ST = {
 const ORDER = ['home', 'about', 'lib', 'potion', 'arcade', 'contact'];
 
 /* ===== Audio ===== */
-const SOUND_VOLUME = 2.55;
+const SOUND_VOLUME = 0.55;
 const MUSIC_VOLUME = 1.5;
 let ac, master, musicGain, lp, musicOn = true, timer, step = 0, nb;
 
@@ -853,7 +853,7 @@ const detail = p => `<div class="det"><h4>The problem</h4><p>${esc(p.problem)}</
 const PG = {
     about: () => `${head('about')}<div class="g2"><div><h2 class="gt">About me</h2><div class="stats"><span><b>${CFG.projects.length}</b>PROJECTS</span>` +
         `<span><b>${CFG.skills.length}</b>SKILLS</span><span><b>6</b>STATIONS</span></div><p>${esc(CFG.bio)}</p>` +
-        `<p>${esc(CFG.about2)}</p><button class="btn p" data-go="lib">See my work</button> <button class="btn o" id="rs">Resume</button>` +
+        `<p>${esc(CFG.about2)}</p><button class="btn p" data-go="lib">See my work</button>` +
         `</div>
   <div class="pass"><small>BOARDING PASS</small><h4>${esc(CFG.name)}</h4><small>${esc(CFG.roles[0]).toUpperCase()}</small>` +
         `<hr><small>FROM</small><b>MONTALBAN RIZAL</b><br><small>TO</small><b>YOUR NEXT PROJECT</b><hr><div class="bc">` +
@@ -897,12 +897,6 @@ function openPage(k) {
     $('#ov').classList.add('show');
     $('#ov').scrollTop = 0;
     document.body.classList.add('pg');
-    const rs = $('#rs');
-    if (rs) {
-        rs.onclick = () => {
-            CFG.resume && CFG.resume !== '#' ? window.open(CFG.resume, '_blank', 'noopener') : toast('Add your resume link to CFG.resume');
-        };
-    }
     b.querySelectorAll('[data-go]').forEach(x => x.onclick = () => travel(x.dataset.go));
     b.querySelectorAll('.pj .tg').forEach(x => x.onclick = () => {
         const c = x.closest('.pj');
