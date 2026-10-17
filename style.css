@@ -464,7 +464,8 @@ textarea:focus-visible {
 }
 
 .box {
-    max-width: 1160px;
+    width: 100%;
+    max-width: 1680px;
     margin: 0 auto;
     transition: transform .6s cubic-bezier(.6,0,.4,1),filter .6s,opacity .6s;
 }
