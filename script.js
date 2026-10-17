@@ -10,7 +10,7 @@ const CFG = {
     email: 'ladistajeremy11@gmail.com',
     // Paste your Formspree / Web3Forms endpoint URL here to receive messages straight in your inbox.
     // Leave '' to keep the email-app (mailto) behaviour.
-    formUrl: '',
+    formUrl: 'https://formspree.io/f/mljgzrrv',
     github: '#',
     linkedin: '#',
     resume: '#',
@@ -32,7 +32,19 @@ const CFG = {
             result: 'Delivered a fully functional local e-commerce store experience with seamless catalog navigation.',
             metrics: [['100%', 'custom built'], ['Local', 'XAMPP setup']],
             stack: ['PHP', 'MySQL', 'JavaScript', 'HTML/CSS']
-        },    
+        },
+        {
+            t: 'Smart Recycling Trash Recognition',
+            tag: 'AI-powered waste classification and IoT bin control',
+            cat: 'Web app · IoT',
+            image: 'assets/srtr-scanning.jpg',
+            d: 'A smart waste-sorting system that identifies waste through a camera and guides it to the right bin.',
+            problem: 'Sorting waste correctly can be confusing, and shared bins often depend on people choosing the right compartment.',
+            approach: 'Connected a PHP and MySQL dashboard to Gemini image recognition, live camera scanning, and an Arduino-controlled bin system through a Python serial bridge.',
+            result: 'Brings camera-based classification, bin status monitoring, scan history, and physical bin control into one workflow.',
+            metrics: [['AI', 'image recognition'], ['IoT', 'automated bins']],
+            stack: ['PHP', 'MySQL', 'JavaScript', 'Python', 'Arduino', 'Gemini API']
+        }
     ]
 };
 
@@ -825,7 +837,10 @@ const head = k => {
         `<span>${ST[k].n.toUpperCase()}</span></div>`;
 };
 
-const mock = a => {
+const mock = (a, image, title) => {
+    if (image) {
+        return `<div class="mock shot"><img src="${esc(image)}" alt="${esc(title)} interface preview"></div>`;
+    }
     const [c, d] = a.split(',');
     return `<div class="mock" style="--a:${c};--b:${d}"><div class="mb"><i></i><i></i><i></i></div><div class="mx">` +
         `<s></s><b></b><u></u><u></u></div></div>`;
@@ -850,8 +865,8 @@ const PG = {
   <article class="tk pj feat"><div><div class="meta"><span class="f">FEATURED</span><span>${f.year}</span>` +
             `<span>${esc(f.role)}</span></div><h3>${esc(f.t)}</h3><p style="color:var(--pink);font-weight:700">${esc(f.tag)}</p>` +
             `<p>${esc(f.d)}</p>${mets(f)}<div>${tags(f)}</div><p><button class="btn p tg">Read the story</button>` +
-            `</p>${detail(f)}</div>${mock(f.art)}</article>
-  ${CFG.projects.slice(1).map(p => `<article class="tk pj">${mock(p.art)}<div class="meta" style="margin-top:12px"><span>${p.year}</span>` +
+            `</p>${detail(f)}</div>${mock(f.art, f.image, f.t)}</article>
+  ${CFG.projects.slice(1).map(p => `<article class="tk pj">${mock(p.art, p.image, p.t)}<div class="meta" style="margin-top:12px">${p.year ? `<span>${esc(p.year)}</span>` : ''}` +
       `<span>${esc(p.cat)}</span></div><h3>${esc(p.t)}</h3><p>${esc(p.tag)}</p>${mets(p)}<div>${tags(p)}</div>` +
       `<p><button class="btn p tg">Read the story</button></p>${detail(p)}</article>`).join('')}</div>`;
     },
@@ -861,8 +876,8 @@ const PG = {
         `<button class="btn" data-g="stopper">Station Master</button><button class="btn" data-g="stamps">Stamp Match</button>` +
         `</div><div id="game"></div>`,
     contact: () => `${head('contact')}<h2 class="gt">Let's talk</h2><div class="post"><div class="stamp">JL</div><p style="margin-top:0;color:#3a3566;max-width:60%">Send me a postcard. I read every one.</p>` +
-        `<form class="cf" id="cf"><input name="n" placeholder="Your name" aria-label="Your name" required><input name="e" type="email" placeholder="Your email" aria-label="Your email" required>` +
-        `<textarea name="m" rows="4" placeholder="Your message" aria-label="Your message" required></textarea>` +
+        `<form class="cf" id="cf"><input name="name" placeholder="Your name" aria-label="Your name" required><input name="email" type="email" placeholder="Your email" aria-label="Your email" required>` +
+        `<textarea name="message" rows="4" placeholder="Your message" aria-label="Your message" required></textarea>` +
         `<button class="btn p" type="submit" style="justify-self:start">Post it</button></form><p id="cm" style="min-height:1.5em;color:#3a3566">` +
         `</p><p style="color:#3a3566">Or write to <a href="mailto:${esc(CFG.email)}">${esc(CFG.email)}</a> · <a href="${CFG.github}">GitHub</a> · <a href="${CFG.linkedin}">LinkedIn</a>` +
         `</p></div>`
@@ -902,31 +917,32 @@ function openPage(k) {
     }
     if (k === 'contact') {
         const f = $('#cf');
-        f.onsubmit = e => {
+        f.onsubmit = async e => {
             e.preventDefault();
             const d = new FormData(f), msg = $('#cm'), btn = f.querySelector('button');
-            const viaMail = () => {
-                const a = document.createElement('a');
-                a.href = `mailto:${CFG.email}?subject=${encodeURIComponent('Portfolio message from ' + d.get('n'))}&body=${encodeURIComponent(d.get('m') + '\n\n' + d.get('n') + ' (' + d.get('e') + ')')}`;
-                a.click();
-                msg.textContent = 'Opening your email app. If nothing opens, write to ' + CFG.email + ' directly.';
-            };
             if (!CFG.formUrl) {
-                viaMail();
+                msg.textContent = 'The contact form is not configured. Please write to ' + CFG.email + ' directly.';
                 return;
             }
             btn.disabled = true;
             msg.textContent = 'Posting your postcard...';
-            fetch(CFG.formUrl, { method: 'POST', body: d, headers: { Accept: 'application/json' } })
-                .then(r => {
-                    if (!r.ok) {
-                        throw new Error('bad status');
-                    }
-                    f.reset();
-                    msg.textContent = 'Postcard delivered! Thanks, I will write back soon.';
-                })
-                .catch(viaMail)
-                .finally(() => { btn.disabled = false; });
+            try {
+                const response = await fetch(CFG.formUrl, {
+                    method: 'POST',
+                    body: d,
+                    headers: { Accept: 'application/json' }
+                });
+                if (!response.ok) {
+                    throw new Error(`Form submission failed with status ${response.status}`);
+                }
+                f.reset();
+                msg.textContent = 'Postcard delivered! Thanks, I will write back soon.';
+            } catch (error) {
+                console.error('Contact form submission failed:', error);
+                msg.textContent = 'Your message could not be sent. Please try again or email ' + CFG.email + ' directly.';
+            } finally {
+                btn.disabled = false;
+            }
         };
     }
 }
