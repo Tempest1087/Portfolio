@@ -464,8 +464,7 @@ textarea:focus-visible {
 }
 
 .box {
-    width: 100%;
-    max-width: 1680px;
+    max-width: 1160px;
     margin: 0 auto;
     transition: transform .6s cubic-bezier(.6,0,.4,1),filter .6s,opacity .6s;
 }
@@ -1712,5 +1711,40 @@ body:not(.pg):after {
     }
     .overlay {
         padding-top: 150px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .nav {
+        width: min(1600px,96vw);
+    }
+
+    #hero {
+        width: 100%;
+        max-width: none;
+        padding-right: clamp(48px,6vw,120px);
+        padding-left: clamp(48px,6vw,120px);
+        gap: clamp(40px,5vw,96px);
+    }
+
+    .name {
+        font-size: clamp(112px,8vw,156px);
+    }
+
+    .lead {
+        max-width: 680px;
+    }
+
+    .overlay {
+        padding-right: clamp(28px,3vw,64px);
+        padding-left: clamp(28px,3vw,64px);
+    }
+
+    .box {
+        max-width: 1680px;
+    }
+
+    .box h2 {
+        font-size: clamp(72px,7vw,120px);
     }
 }
