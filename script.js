@@ -59,7 +59,7 @@ const ST = {
 const ORDER = ['home', 'about', 'lib', 'potion', 'arcade', 'contact'];
 
 /* ===== Audio ===== */
-const SOUND_VOLUME = 0.55;
+const SOUND_VOLUME = 2.55;
 const MUSIC_VOLUME = 1.5;
 let ac, master, musicGain, lp, musicOn = true, timer, step = 0, nb;
 
