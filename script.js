@@ -8,8 +8,7 @@ const CFG = {
     name: 'Jeremy Ladista',
     status: 'Open to work · Remote',
     email: 'ladistajeremy11@gmail.com',
-    // Add the deployed Google Apps Script web app URL to enable verified contact messages.
-    verificationUrl: 'https://script.google.com/macros/s/AKfycbzuEJTgvvJf_OJ5SWftOasd-hH4zzvCjGoxShsLTlaShqoL1eFqC47il40bEjCay4HY/exec',
+    formUrl: 'https://formspree.io/f/mljgzrrv',
     github: '#',
     linkedin: '#',
     resume: '#',
@@ -876,11 +875,11 @@ const PG = {
     arcade: () => `${head('arcade')}<h2 class="gt">Games</h2><div class="tabs"><button class="btn on" data-g="lanes">Track Switch</button>` +
         `<button class="btn" data-g="stopper">Station Master</button><button class="btn" data-g="stamps">Stamp Match</button>` +
         `</div><div id="game"></div>`,
-    contact: () => `${head('contact')}<h2 class="gt">Let's talk</h2><div class="post"><div class="stamp">JL</div><p style="margin-top:0;color:#3a3566;max-width:60%">Confirm your email first; I’ll only receive your message after you verify it.</p>` +
-        `<form class="cf" id="cf"><input type="hidden" name="action" value="submit"><div class="hp" aria-hidden="true"><label>Leave this field empty<input name="company" tabindex="-1" autocomplete="off"></label></div>` +
+    contact: () => `${head('contact')}<h2 class="gt">Let's talk</h2><div class="post"><div class="stamp">JL</div><p style="margin-top:0;color:#3a3566;max-width:60%">Send me a postcard. I read every one.</p>` +
+        `<form class="cf" id="cf"><input type="hidden" name="_subject" value="Portfolio contact message"><div class="hp" aria-hidden="true"><label>Leave this field empty<input name="_gotcha" tabindex="-1" autocomplete="off"></label></div>` +
         `<input name="name" maxlength="100" placeholder="Your name" aria-label="Your name" required><input name="email" type="email" maxlength="254" placeholder="Your email" aria-label="Your email" required>` +
         `<textarea name="message" rows="4" maxlength="4000" placeholder="Your message" aria-label="Your message" required></textarea>` +
-        `<button class="btn p" type="submit" style="justify-self:start">Post it</button></form><p id="cm" style="min-height:1.5em;color:#3a3566">` +
+        `<button class="btn p" type="submit" style="justify-self:start">Post it</button></form><p id="cm" role="status" aria-live="polite" style="min-height:1.5em;color:#3a3566">` +
         `</p><p style="color:#3a3566">Or write to <a href="mailto:${esc(CFG.email)}">${esc(CFG.email)}</a> · <a href="${CFG.github}">GitHub</a> · <a href="${CFG.linkedin}">LinkedIn</a>` +
         `</p></div>`
 };
@@ -919,16 +918,39 @@ function openPage(k) {
     }
     if (k === 'contact') {
         const f = $('#cf');
-        f.onsubmit = e => {
-            if (!CFG.verificationUrl) {
-                e.preventDefault();
-                $('#cm').textContent = 'Email verification is not configured yet. Please write to ' + CFG.email + ' directly.';
+        f.onsubmit = async e => {
+            e.preventDefault();
+            const msg = $('#cm'), btn = f.querySelector('button');
+            if (!CFG.formUrl) {
+                msg.textContent = 'The contact form is not configured. Please write to ' + CFG.email + ' directly.';
                 return;
             }
-            f.action = CFG.verificationUrl;
-            f.method = 'POST';
-            f.target = '_blank';
-            $('#cm').textContent = 'A verification step will open in a new tab. Confirm your email there to deliver your message.';
+            btn.disabled = true;
+            msg.textContent = 'Sending your postcard...';
+            try {
+                const response = await fetch(CFG.formUrl, {
+                    method: 'POST',
+                    body: new FormData(f),
+                    headers: { Accept: 'application/json' }
+                });
+                if (!response.ok) {
+                    let detail = '';
+                    try {
+                        const result = await response.json();
+                        detail = result.errors?.map(error => error.message).join(' ') || '';
+                    } catch (error) {
+                        console.error('Could not read contact form error response:', error);
+                    }
+                    throw new Error(detail || `Form submission failed with status ${response.status}`);
+                }
+                f.reset();
+                msg.textContent = 'Postcard delivered! Thanks, I will write back soon.';
+            } catch (error) {
+                console.error('Contact form submission failed:', error);
+                msg.textContent = 'Your message could not be sent. Please try again or email ' + CFG.email + ' directly.';
+            } finally {
+                btn.disabled = false;
+            }
         };
     }
 }
